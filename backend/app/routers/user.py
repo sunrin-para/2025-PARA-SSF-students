@@ -1,6 +1,7 @@
 from fastapi import APIRouter, HTTPException
 from schemas import ResetResponse, PreferencesUpdateRequest, UpdateResponse
 from services import UserService
+from .chat import chat_service
 
 router = APIRouter(
     prefix="/user", tags=["user"],
@@ -14,6 +15,7 @@ def update_preferences(request: PreferencesUpdateRequest): # 분위기, 장르, 
     try:
         moods, genres, countries = request, request, request # 각각 변수 선언 해줍니다. 빈칸을 채워주세요.
         message = user_service.update_preferences() # 선호도를 업데이트하는 함수를 호출합니다. 빈칸을 채워주세요.
+        chat_service.update_preferences() # 해당 API가 호출된걸 기록합니다.
         return UpdateResponse(message=message)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

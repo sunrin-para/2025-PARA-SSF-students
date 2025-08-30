@@ -59,25 +59,28 @@ class SpotifyHandler: # Spotify API를 사용하는 객체이다.
         tracks = [] # 곡 정보 저장
         for item in response["items"]: # 플레이리스트에서 곡 리스트를 추출합니다.
             if item["track"]: # 플레이리스트에서 곡이 존재하는 경우
-                track = item["track"] # 곡 변수 선언
-                artists = [] # 곡 아티스트 저장
-                for artist in track['artists']: # 아티스트가 여러명인 경우 하나씩 정보 추출합니다.
-                    artists.append({
-                        'id': artist['id'],
-                        'name': artist['name'],
-                        'url': artist['external_urls']['spotify']
-                    }) # API에서 필요한 정보만 추출합니다.
-                thumbnail = None # 썸네일 기본값 None으로 선언합니다.
-                if track["album"]["images"]: # 썸네일이 존재 하는 경우
-                    thumbnail = track["album"]["images"][0]["url"] # 썸네일 이미지 URL을 저장합니다.
-                tracks.append({
-                    'id': track['id'],
-                    'name': track['name'],
-                    "url": track["external_urls"]["spotify"],
-                    'duration': track['duration_ms'],
-                    'artists': artists,
-                    "thumbnail": thumbnail
-                }) # 곡 정보를 tracks 리스트에 추가합니다.
+                try:
+                    track = item["track"] # 곡 변수 선언
+                    artists = [] # 곡 아티스트 저장
+                    for artist in track['artists']: # 아티스트가 여러명인 경우 하나씩 정보 추출합니다.
+                        artists.append({
+                            'id': artist['id'],
+                            'name': artist['name'],
+                            'url': artist['external_urls']['spotify']
+                        }) # API에서 필요한 정보만 추출합니다.
+                    thumbnail = None # 썸네일 기본값 None으로 선언합니다.
+                    if track["album"]["images"]: # 썸네일이 존재 하는 경우
+                        thumbnail = track["album"]["images"][0]["url"] # 썸네일 이미지 URL을 저장합니다.
+                    tracks.append({
+                        'id': track['id'],
+                        'name': track['name'],
+                        "url": track["external_urls"]["spotify"],
+                        'duration': track['duration_ms'],
+                        'artists': artists,
+                        "thumbnail": thumbnail
+                    }) # 곡 정보를 tracks 리스트에 추가합니다.
+                except:
+                    continue
         return tracks # tracks 리스트를 반환합니다.
 
 class PlaylistService():
@@ -101,15 +104,6 @@ class PlaylistService():
 
     def generate_playlist(self, track_length: int):
         try:
-            chat_handler = JsonHandler("./data/chat.json") # 채팅내역 파일을 불러옵니다.
-            chat = chat_handler.read() # 파일을 읽습니다.
-            chat.append({
-                "role": "system",
-                "content": "generate_playlist",
-                "created_at": int(time.time())
-            }) # 파일에 플레이리스트가 생성된 시점을 기록합니다.
-            chat_handler.write(chat) # 파일을 저장합니다.
-
             sources = [] # 참고한 플레이리스트를 저장합니다.
             total_tracks = {} # 생성된 플레이리스트의 곡들을 저장합니다.
             spotify_handler = SpotifyHandler() # SpotifyHandler 객체를 불러옵니다.

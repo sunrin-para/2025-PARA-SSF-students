@@ -10,7 +10,12 @@ class Pipeline(): # AI 답변을 생성하는 객체입니다.
         self.prompt_handler = PromptHandler() # AI가 제 역할을 수행할 수 있도록 하는 프롬프트 관리자를 선언합니다.
 
     def build_chat_with_system(self, chat: List[Dict], system_prompt: str): # 프롬프트를 채팅 기록 가장 최근 메세지 바로 직전에 추가하는 함수입니다.
-        t = chat.pop() # 임시로 가장 최근 메세지를 떼어냅니다
+        new_chat = [] # 새 메세지 기록 변수를 선언합니다.
+        for msg in chat: # 메세지 기록 내 메세지들을 반복합니다.
+            if msg["role"] != "system": # 메세지가 system이 아닌 경우에
+                new_chat.append(msg) # 새 메세지 기록에 추가합니다.
+        chat = new_chat # 새 메세지 기록으로 덮어씨웁니다.
+        t = chat.pop() # 임시로 가장 최근 메세지를 떼어냅니다.
         chat.append({"role": "system", "content": }) # 프롬프트를 가장 최근에 넣습니다. 빈칸을 채워주세요.
         chat.append(t) # 다시 떼어냈던 가장 최근 메세지에 넣습니다.
         return chat
@@ -49,6 +54,17 @@ class ChatService():
 
     def save_chat(self): # 대화내역이 업데이트 될떄마다 사용하는 용도의 함수입니다.
         self.json_handler.write(self.chat) # 대화내역을 저장합니다.
+
+    def generate_playlist(self): # 플레이리스트 생성 API가 호출된걸 기록하는 함수입니다.
+        for i in range(len(self.chat)):
+            if self.chat[i]["role"] == "system" and self.chat[i]["content"] == "playlist_ui":
+                self.chat[i]["content"] = "generate_playlist"
+        self.chat.append({"role": "system", "content": "playlist_ui"}) # 기록을 추가합니다.
+        self.save_chat() # 기록을 저장합니다.
+
+    def update_preferences(self): # 선호도 갱신 API가 호출된걸 기록하는 함수입니다.
+        self.chat.append({"role": "system", "content": "update_preferences"}) # 기록을 추가합니다.
+        self.save_chat() # 기록을 저장합니다.
 
     def add_message(self, role: str, content: str, created_at: Optional[int] = None): # 메세지를 대화내역에 추가하는 함수입니다.
         message = {
